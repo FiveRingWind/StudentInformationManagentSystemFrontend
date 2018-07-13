@@ -1,0 +1,100 @@
+.app-wrapper {
+  display: block;
+  min-height: 100vh; }
+
+.content-container {
+  width: 100%;
+  transform: translate(0, 0);
+  position: relative; }
+  @media (min-width: 992px) {
+    .content-container {
+      width: calc(100% - 15em);
+      transform: translate(15em, 0); }
+      .content-container.full {
+        width: calc(100% - .75em);
+        transform: translate(0.75em, 0); }
+      .content-container .menu-dropshadow {
+        display: none !important; } }
+  .content-container .menu-dropshadow {
+    display: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 990; }
+
+.site-head {
+  height: 62px;
+  background: #2962ff;
+  padding: 1.2rem; }
+
+.view .view-header, .view .view-content {
+  padding: 1em 1.2rem; }
+
+.view .view-header {
+  background: #2962ff;
+  margin-top: -2px;
+  padding-bottom: 4.4rem; }
+
+.view .view-content {
+  margin-top: -4.2rem; }
+
+.view .view-header .breadcrumb-item + .breadcrumb-item::before {
+  color: #fff; }
+
+.view .view-content.view-pages {
+  padding: 4rem;
+  margin: 0;
+  min-height: 100vh; }
+
+.view .view-header, .view .view-content {
+  padding: 1em 1.2rem; }
+
+.view .view-header {
+  background: #2962ff;
+  margin-top: -2px;
+  padding-bottom: 4.4rem; }
+
+.view .view-content {
+  margin-top: -4.2rem; }
+
+.view .view-header .breadcrumb-item + .breadcrumb-item::before {
+  color: #fff; }
+
+.view .view-content.view-pages {
+  padding: 4rem;
+  margin: 0;
+  min-height: 100vh; }
+
+.view1 .view-header, .view1 .view-content {
+  padding: 1em 1.2rem; }
+
+.view1 .view-header {
+  background: white;
+  margin-top: -2px;
+  padding-bottom: 4.4rem; }
+
+.view1 .view-content {
+  margin-top: -4.2rem; }
+
+.view1 .view-header .breadcrumb-item + .breadcrumb-item::before {
+  color: #fff; }
+
+.view1 .view-content.view-pages {
+  padding: 4rem;
+  margin: 0;
+  min-height: 100vh; }
+
+@media (min-width: 768px) {
+  .site-head,
+  .view .view-header,
+  .view .view-content {
+    padding: 1.1em 2rem; }
+  .view .view-header {
+    padding-bottom: 4.4rem; }
+  .view-header header .title {
+    font-size: 1.45rem; }
+  .view-header header .subtitle {
+    font-size: 14px; } }

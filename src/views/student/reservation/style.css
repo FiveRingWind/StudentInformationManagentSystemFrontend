@@ -1,0 +1,54 @@
+.main-title {
+    font-size: 16px;
+    color: #171d25;
+    font-weight: 400;
+    height: 50px;
+    line-height: 50px;
+    border-bottom: 1px solid #bec0c3;
+    margin: 0 20px 16px;
+}
+.beian-flow {
+    position: relative;
+    display: table
+}
+
+.beian-flow-guide {
+    display: table-cell;
+    width: 220px;
+    border-right: 1px solid #edeef2;
+    vertical-align: top
+}
+
+
+
+.tc-panel {
+    background-color: none;
+    box-shadow: none;
+    padding: 0;
+    max-width: inherit;
+    margin-left: 0;
+    box-sizing: border-box
+}
+
+.guide-box {
+    margin: 0 20px;
+}
+
+.section{
+    margin: 0 20px 16px;
+
+}
+
+.section-title {
+    font-size: 15px;
+    color: #171d25;
+    font-weight: 400;
+    height: 50px;
+    margin: 0 20px 16px;
+
+}
+.sensor-title{
+    font-size: 30px;
+    color:#171d25;
+    font-weight: 400;
+}

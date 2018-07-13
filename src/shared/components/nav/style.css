@@ -1,0 +1,133 @@
+.site-nav {
+  border-right: 1px solid #eeeeee;
+  width: 15em;
+  position: fixed;
+  z-index: 1030;
+  top: 0;
+  bottom: 0;
+  transition: 0.3s cubic-bezier(0.86, 0, 0.07, 1);
+  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  transform: translate(-100%, 0); }
+  .site-nav.mini {
+    transform: translate(0, 0); }
+  @media (min-width: 992px) {
+    .site-nav {
+      transform: translate(0, 0); }
+      .site-nav.mini {
+        transform: translate(-95%, 0); }
+        .site-nav.mini:hover {
+          transform: translate(0, 0); } }
+  .site-nav .nav-list-container {
+    height: calc(100% - 4em); }
+  .site-nav .scrollarea .scrollbar-container {
+    opacity: 0; }
+    .site-nav .scrollarea .scrollbar-container.vertical {
+      width: 15px; }
+  .site-nav .scrollarea .scrollbar-container:hover {
+    background: transparent; }
+  .site-nav .nav-head {
+    border-bottom: 2px solid #e3f2fd;
+    padding: .8rem 1rem;
+    text-align: center;
+    position: relative;
+    height: 4.4em;
+    margin-left: -1.5rem; }
+  .site-nav .nav-head svg > path {
+    stroke: #2962ff; }
+  .site-nav .nav-head .toggle-dot {
+    width: 11px;
+    height: 11px;
+    border: 2px solid #2962ff;
+    border-radius: 50%;
+    position: absolute;
+    top: .8rem;
+    right: .8rem;
+    cursor: pointer; }
+    .site-nav .nav-head .toggle-dot.active {
+      background: #2962ff; }
+    .site-nav .nav-head .toggle-dot:before {
+      content: '';
+      position: relative;
+      display: block;
+      width: 400%;
+      height: 400%;
+      box-sizing: border-box;
+      margin-left: -150%;
+      margin-top: -150%;
+      border-radius: 100%;
+      background-color: #2962ff;
+      animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.33); }
+  80%, 100% {
+    opacity: 0; } }
+  .site-nav .nav-head a {
+    color: #212121;
+    font-weight: 700; }
+    .site-nav .nav-head a > svg {
+      position: relative;
+      top: 1px; }
+    .site-nav .nav-head a > strong {
+      display: inline-block;
+      margin-left: .2rem;
+      letter-spacing: 2.4px;
+      text-shadow: -0.5px 0px 0 #3b3b3b, 0.5px 0px 0 #3b3b3b; }
+  .site-nav .nav-list-title {
+    padding: .4rem 1.6rem;
+    margin: 1.4rem 0;
+    font-size: 70%;
+    text-transform: uppercase;
+    font-weight: bold;
+    position: relative; }
+    .site-nav .nav-list-title:before {
+      position: absolute;
+      content: "";
+      width: 15px;
+      height: 2px;
+      bottom: 0;
+      background: #2962ff; }
+  .site-nav .nav-list li a {
+    cursor: pointer;
+    display: block;
+    padding: 1.1rem 1.5rem;
+    color: #353535;
+    font-weight: 600;
+    position: relative; }
+    .site-nav .nav-list li a > .name {
+      display: inline-block;
+      margin-left: 1.5rem;
+      text-transform: uppercase;
+      font-size: 90%;
+      transform: translate(0, 1.1px); }
+    .site-nav .nav-list li a > .icon-down {
+      float: right;
+      transform: translate(0, 0.4rem);
+      transition: .15s ease-in; }
+    .site-nav .nav-list li a:hover {
+      color: #2962ff; }
+    .site-nav .nav-list li a .icon-dashboard {
+      color: #2962ff !important; }
+    .site-nav .nav-list li a .badge-chart.badge {
+      background: #2962ff; }
+  .site-nav .nav-list li > a.active {
+    font-weight: 700;
+    color: #2962ff; }
+    .site-nav .nav-list li > a.active > .icon-down {
+      transform: translate(0, 0.4rem) rotate(90deg); }
+  .site-nav .nav-list li.selected > a {
+    font-weight: 700;
+    color: #2962ff; }
+    .site-nav .nav-list li.selected > a .icon-down {
+      transform: translate(0, 0.4rem) rotate(-270deg); }
+  .site-nav .nav-list li .inner-drop {
+    font-size: 90%;
+    padding-left: 2.85rem;
+    background: inherit;
+    box-shadow: inset 0 1px 1px 0px rgba(0, 0, 0, 0.05), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.05); }
+  .site-nav .nav-list li .inner-drop a {
+    padding: .9rem 1.5rem; }
+  .site-nav .nav-list li .inner-drop a:hover {
+    color: #2962ff; }

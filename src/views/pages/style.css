@@ -1,0 +1,81 @@
+.view-content.view-session,
+.view-content.view-invoice {
+  position: relative; }
+  .view-content.view-session:before,
+  .view-content.view-invoice:before {
+    content: '';
+    position: absolute;
+    background: #2962ff;
+    width: 100%;
+    top: 0;
+    left: 0;
+    height: 40%; }
+  .view-content.view-session .form-card,
+  .view-content.view-invoice .form-card {
+    width: 25rem; }
+    .view-content.view-session .form-card svg > path,
+    .view-content.view-invoice .form-card svg > path {
+      stroke: #2962ff; }
+  @media (min-width: 992px) {
+    .view-content.view-session .form-card,
+    .view-content.view-invoice .form-card {
+      width: 28rem; } }
+
+.social-auth li {
+  display: inline-block; }
+
+.social-auth li a {
+  display: inline-block;
+  padding: .8rem .9rem;
+  border-radius: 4px;
+  border: 1px solid;
+  margin: 0 .6rem;
+  transition: .15s ease-in; }
+
+.social-auth li:nth-child(1) a {
+  background: #42a5f5;
+  border-color: #42a5f5;
+  color: #fff; }
+
+.social-auth li:nth-child(2) a {
+  background: #3949ab;
+  border-color: #3949ab;
+  color: #fff; }
+
+.social-auth li:nth-child(3) a {
+  background: #e53935;
+  border-color: #e53935;
+  color: #fff; }
+
+.view .view-content.view-error {
+  position: relative;
+  padding: 0; }
+  .view .view-content.view-error .display-404 {
+    font-weight: 800;
+    text-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1);
+    font-size: 12rem;
+    margin-top: -8rem; }
+  .view .view-content.view-error .display-404 > span {
+    width: 12rem;
+    height: 12rem;
+    border-radius: 100%;
+    background: #2962ff;
+    display: inline-block;
+    position: relative; }
+    .view .view-content.view-error .display-404 > span:before {
+      content: "";
+      position: absolute;
+      width: 88%;
+      height: 88%;
+      background: #fff;
+      border-radius: 100%;
+      top: 6%;
+      left: 6%; }
+
+.view .view-content.view-invoice .invoice-card {
+  width: 25rem;
+  min-width: 25rem;
+  max-width: 58rem; }
+  @media (min-width: 992px) {
+    .view .view-content.view-invoice .invoice-card {
+      width: 58rem; } }

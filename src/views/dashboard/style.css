@@ -1,0 +1,11 @@
+.view .view-dashboard .sales-card .card + .card .card-block {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid #eceff1; }
+  .view .view-dashboard .sales-card .card + .card .card-block svg {
+    transform: translate(0, -2px); }
+
+.view .view-dashboard .sales-card .card + .card .card-block:last-child {
+  border: 0; }
