@@ -3,7 +3,7 @@ import {
     Card, CardBlock
 } from 'reactstrap';
 import $ from "jquery";
-import {Table, Icon, Divider, Popconfirm, Button, Modal, Input, Select,Upload} from 'antd';
+import {Table, Icon, Divider, Popconfirm, Button, Modal, Input, Select, Upload} from 'antd';
 import {type, weblocation} from "../../../config";
 import {Link, IndexLink} from 'react-router';
 import {notification} from "antd/lib/index";
@@ -27,61 +27,76 @@ function timeConverter(UNIX_timestamp) {
     // var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
     return time;
 }
+
 function dataProcess(json) {
-    if(json===undefined)
+    if (json === undefined)
         return json;
-    for(var i = 0 ;i<json.length;i++){
-        if(json[i]["role_id"]===1){
-            json[i]["role_id"]='管理员';
+    for (var i = 0; i < json.length; i++) {
+        if (json[i]["type"] === 1) {
+            json[i]["type"] = '学生';
+        } else if (json[i]["type"] === 2) {
+            json[i]["type"] = '辅导员';
+        } else if (json[i]["type"] === 3) {
+            json[i]["type"] = '管理员';
         }
-        else if(json[i]["role_id"]===5){
-            json[i]["role_id"]='学生';
-        }
-        else if(json[i]["role_id"]===6){
-            json[i]["role_id"]='教师';
+        if (json[i]["sex"] == 0) {
+            json[i]["sex"] = '女';
+        } else {
+            json[i]["sex"] = '男';
         }
     }
     return json;
 }
-const columns = [{
-    title: '姓名',
-    dataIndex: 'peoplename',
-    key: 'peoplename'
-}, {
-    title: '权限',
-    dataIndex: 'role_id',
-    key: 'role_id'
-}, {
-    title: '用户名',
-    dataIndex: 'loginname',
-    key: 'loginname'
-}, {
-    title: '身份证号',
-    dataIndex: 'identity',
-    key: 'identity'
-}, {
-    title: '邮箱',
-    dataIndex: 'email',
-    key: 'email'
-}, {
-    title: '联系方式',
-    dataIndex: 'telephone',
-    key: 'telephone'
-}, {
-    title: '用户编号',
-    dataIndex: 'userid',
-    key: 'userid'
-}, {
-    title: '操作',
-    render(text, record) {
-        return (
-            <div>
-                <Change record={record} userid={record.userid}/><Divider type='vertrical'/><Delete
-                userid={record.userid}/>
-            </div>
-        )
-    }
-}];
+
+const columns = [
+    {
+        title: '用户编号',
+        dataIndex: 'uid',
+        key: 'uid'
+    }, {
+        title: '用户名',
+        dataIndex: 'username',
+        key: 'username'
+    }, {
+        title: '角色',
+        dataIndex: 'type',
+        key: 'type'
+    }, {
+        title: '姓名',
+        dataIndex: 'name',
+        key: 'name'
+    }, {
+        title: '性别',
+        dataIndex: 'sex',
+        key: 'sex'
+    }, {
+        title: '生日',
+        dataIndex: 'birthday',
+        key: 'birthday'
+    }, {
+        title: '身份证号',
+        dataIndex: 'identity',
+        key: 'identity'
+    }, {
+        title: '籍贯',
+        dataIndex: 'nativeplace',
+        key: 'nativeplace'
+    }, {
+        title: '爱好',
+        dataIndex: 'hobby',
+        key: 'hobby'
+    }, {
+        title: '操作',
+        render(text, record) {
+            return (
+                <div>
+                    <Change record={record} uid={record.uid}/><Divider type='vertrical'/>
+                    <Delete uid={record.uid}/><Divider type='vertrical'/>
+                    <ResetPassword uid={record.uid}/>
+                </div>
+            )
+        }
+    }];
 
 const ViewContent = ({children}) => (
     <div className="view-content view-components">
@@ -101,272 +116,42 @@ const ViewHeader = () => (
 class Change extends React.Component {
     constructor(props) {
         super(props)
+        this.handleOk = this.handleOk.bind(this);
         this.state = {
-            userid: props.userid,
+            uid: props.uid,
             visible: false,
             confirmLoading: false
         }
         this.form = {
-            peoplename: '',
-            identity: '',
-            loginname: '',
-            telephone: '',
-            password: '',
-            repassword: '',
-            email: '',
-            roleid: '',
+            uid: props.uid,
         }
         this.old = {
-            peoplename: this.props.record.peoplename,
+            username: this.props.record.username,
             identity: this.props.record.identity,
-            loginname: this.props.record.loginname,
-            telephone: this.props.record.telephone,
-            email: this.props.record.email
+            name: this.props.record.name,
+            type: this.props.record.type,
+            nativeplace: this.props.record.nativeplace,
+            hobby: this.props.record.hobby,
+
         }
     }
-
-    showModal = () => {
-        var obj = this;
-        obj.setState({
-            visible: true,
-        });
-    }
-    handleOk = () => {
-        this.setState({
-            confirmLoading: true,
-        });
-        var obj = this;
-        var postbody = {
-            userid:this.state.userid,
-            peoplename: this.form.peoplename,
-            identity: this.form.identity,
-            password: this.form.password,
-            telephone: this.form.telephone,
-            email: this.form.email,
-            roleid: this.form.roleid
-        };
-        $.ajax({
-                type: "POST",
-                url: weblocation + "/admin/user/edit",
-                cache: false,
-                crossDomain: true,
-                xhrFields: {
-                    withCredentials: true
-                },
-                data: {json: JSON.stringify(postbody)},
-                success: function (data) {
-                    var json = JSON.parse(data);
-                    if (json['condition'] == 350) {
-                        notification.open({
-                            message: '成功',
-                            description: json['message'],
-                            icon: <Icon type="check" style={{color: '#108ee9'}}/>,
-                        });
-                        Class.componentDidMount();
-                    }
-                    else {
-                        notification.open({
-                            message: '失败',
-                            description: json['message'],
-                            icon: <Icon type="close" style={{color: '#FF4040'}}/>,
-                        });
-                    }
-                    obj.setState({
-                        visible: false,
-                        confirmLoading: false,
-                    });
-                }
-            }
-        )
-    }
-    handleCancel = () => {
-        this.setState({
-            visible: false,
-        });
-    }
-
-    handleChange=(e)=>{
-        this.form.roleid = e;
-    }
-
-    render() {
-        return (
-            <span>
-                <a color="primary" href="#" onClick={this.showModal}>修改</a>
-                <Modal title="Title"
-                       visible={this.state.visible}
-                       onOk={this.handleOk}
-                       confirmLoading={this.state.confirmLoading}
-                       onCancel={this.handleCancel}
-                       footer={[
-                           <Button key="submit" type="primary" loading={this.state.confirmLoading}
-                                   onClick={this.handleOk}>修改</Button>,
-                           <Button key="back" type="danger" onClick={this.handleCancel}>取消</Button>,
-                       ]}
-                >
-                    <form>
-                        <ValidateForm type="text" title="姓名" hint={this.old.peoplename} vadlidate={(obj, value) => {
-                            this.form.peoplename = '';
-                            if (value.length === 0) {
-                                return [false, "请输入姓名"]
-                            } else if (value.length > 10) {
-                                return [false, "姓名长度不能超过10"]
-                            }
-                            this.form.peoplename = value;
-                            return [true, ""];
-                        }}/>
-                        <ValidateForm type="text" title="身份证号码" hint={this.old.identity} value={this.old.identity}
-                                      vadlidate={(obj, value) => {
-                                          this.form.identity = '';
-                                          if (!IdentityCheck(value))
-                                              return [false, "身份证非法,请检查"];
-                                          var temp = this;
-                                          $.post(weblocation + "/user/vadliidateidentity", {
-                                              json: JSON.stringify({
-                                                  identity: value,
-                                              }),
-                                          }, function (data) {
-                                              var json = JSON.parse(data);
-
-                                              if (json["condition"] !== 0) {
-                                                  obj.seterror(false, json["message"]);
-                                              } else {
-                                                  temp.form.identity = value
-                                                  obj.seterror(true, json["message"]);
-                                              }
-                                          });
-                                          return [true, ""];
-                                      }}/>
-                        <ValidateForm type="text" title="手机号码" hint="11位手机号码" value={this.old.telephone}
-                                      vadlidate={(obj, value) => {
-                                          this.form.telephone = ''
-                                          if (value.length === 0) {
-                                              return [false, "手机号码未输入"]
-                                          } else if (value.length !== 11) {
-                                              return [false, "手机号码长度不正确"]
-                                          }
-                                          var b = /^1[3|4|5|7|8][0-9]{9}$/g
-
-                                          if (b.test(value) === false)
-                                              return [false, "手机号码输入不合法"]
-                                          this.form.telephone = value
-                                          return [true, ""]
-                                      }}/>
-                        <ValidateForm type="text" title="电子邮箱" hint="example@example.com" value={this.old.email}
-                                      vadlidate={(obj, value) => {
-                                          this.form.email = ''
-
-                                          if (value.length === 0) {
-                                              return [false, "电子邮箱未输入"]
-                                          } else if (value.length > 35) {
-                                              return [false, "电子邮箱不能超过35"]
-                                          }
-                                          if (EmailCheck(value) === false)
-                                              return [false, "电子邮箱输入不合法"]
-                                          this.form.email = value
-                                          return [true, ""]
-                                      }}/>
-                        <ValidateForm type="password" title="密码" hint="不修改则不填" vadlidate={(obj, value) => {
-                            this.form.password = ''
-
-                            if (value.length < 8) {
-                                return [false, "密码长度不能小于8位"]
-                            } else if (value.length > 20) {
-                                return [false, "密码长度不能超过20位"]
-                            }
-                            var b = new RegExp(/[A-Za-z].*[0-9]|[0-9].*[A-Za-z]/);
-                            if (b.test(value) === false)
-                                return [false, "密码需要包含字母和数字"]
-                            this.form.password = value
-                            return [true, ""]
-                        }}/>
-                        <ValidateForm type="password" title="确认密码" hint="与上面输入的密码相同" vadlidate={(obj, value) => {
-                            this.form.repassword = ''
-                            if (value === '') {
-                                return [false, "没有输入确认密码"]
-                            }
-                            if (this.form.password !== value) {
-                                return [false, "两次密码输入不一致"]
-                            }
-                            this.form.repassword = this.form.password
-                            return [true, '']
-                        }}/>
-                        <Select defaultValue="请选择用户角色" style={{width: 240}} onChange={this.handleChange}>
-                            <Option value="5">学生</Option>
-                            <Option value="6">教师</Option>
-                            <Option value="1">管理员</Option>
-                        </Select>
-                    </form>
-                </Modal>
-            </span>
-        )
-    }
-}
-
-class Delete extends React.Component {
-    constructor(props) {
-        super(props)
+    componentDidUpdate(nextProps){
         this.state = {
-            userid: props.userid
+            uid: this.props.uid,
+            visible: false,
+            confirmLoading: false
         }
-    }
-
-    onConfirm() {
-        var obj = this;
-        var postbody = {
-            userid: [obj.state.userid]
-        }
-        $.ajax({
-            type: "POST",
-            url: weblocation + "/admin/user/delete",
-            cache: false,
-            crossDomain: true,
-            xhrFields: {
-                withCredentials: true
-            },
-            data: {json: JSON.stringify(postbody)},
-            success: function (data) {
-                var json = JSON.parse(data);
-                if (json[0]['condition'] == 340) {
-                    notification.open({
-                        message: '成功',
-                        description: json['message'],
-                        icon: <Icon type="check" style={{color: '#108ee9'}}/>,
-                    });
-                    Class.componentDidMount();
-                } else {
-                    notification.open({
-                        message: '失败',
-                        description: json['message'],
-                        icon: <Icon type="colse" style={{color: '#ff4040'}}/>,
-                    });
-                }
-            }
-        })
-    }
-
-    render() {
-        return (
-            <Popconfirm title="您是否要删除用户" okText="Yes" cancelText="No" onConfirm={() => this.onConfirm()}>
-                <a>删除</a>
-            </Popconfirm>
-        )
-    }
-}
-
-class Add extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {}
         this.form = {
-            peoplename: '',
-            identity: '',
-            loginname: '',
-            telephone: '',
-            password: '',
-            repassword: '',
-            email: '',
-            roleid: '',
+            uid: this.props.uid,
+        }
+        this.old = {
+            username: this.props.record.username,
+            identity: this.props.record.identity,
+            name: this.props.record.name,
+            type: this.props.record.type,
+            nativeplace: this.props.record.nativeplace,
+            hobby: this.props.record.hobby,
+
         }
     }
 
@@ -377,35 +162,31 @@ class Add extends React.Component {
         });
     }
     handleOk = () => {
-        if (this.form.roleid==='' || this.form.peoplename === '' || this.form.identity === '' || this.form.loginname === '' || this.form.password === '' || this.form.repassword === ''|| this.form.telephone === '' || this.form.email === '') {
-            console.log(this.form)
-            return;
-        }
         this.setState({
             confirmLoading: true,
         });
         var obj = this;
-        var postbody = {
-            loginname: this.form.loginname,
-            peoplename: this.form.peoplename,
-            identity: this.form.identity,
-            password: this.form.password,
-            telephone: this.form.telephone,
-            email: this.form.email,
-            roleid: this.form.roleid
-        };
+        // var postbody = {
+        //     uid: this.state.uid,
+        //     name: this.form.name,
+        //     username: this.form.username,
+        //     nativeplace: this.form.nativeplace,
+        //     identity: this.form.identity,
+        //     hobby: this.form.hobby,
+        //     type: this.form.type
+        // };
         $.ajax({
                 type: "POST",
-                url: weblocation + "/admin/user/add",
+                url: weblocation + "/manager/user/edit",
                 cache: false,
                 crossDomain: true,
                 xhrFields: {
                     withCredentials: true
                 },
-                data: {json: JSON.stringify(postbody)},
+                data: JSON.stringify(obj.form),
                 success: function (data) {
                     var json = JSON.parse(data);
-                    if (json['condition'] == 330) {
+                    if (json['code'] == 900) {
                         notification.open({
                             message: '成功',
                             description: json['message'],
@@ -435,14 +216,274 @@ class Add extends React.Component {
     }
 
     handleChange = (e) => {
-        this.form.roleid = e;
+        this.form.type = e;
+    }
+
+    render() {
+        return (
+            <span>
+                <a color="primary" href="#" onClick={this.showModal}>修改</a>
+                <Modal title="修改用户资料"
+                       visible={this.state.visible}
+                       onOk={this.handleOk}
+                       confirmLoading={this.state.confirmLoading}
+                       onCancel={this.handleCancel}
+                       footer={[
+                           <Button key="submit" type="primary" loading={this.state.confirmLoading}
+                                   onClick={this.handleOk}>修改</Button>,
+                           <Button key="back" type="danger" onClick={this.handleCancel}>取消</Button>,
+                       ]}
+                >
+                    <form>
+                        <ValidateForm type="text" title="用户名" hint="请输入用户名" value={this.old.username}
+                                      vadlidate={(obj, value) => {
+                                          this.form.username = '';
+                                          if (value.length === 0) {
+                                              return [false, "请输入用户名"]
+                                          } else if (value.length > 16) {
+                                              return [false, "用户名长度不能超过16"]
+                                          }
+                                          this.form.username = value;
+                                          return [true, ""];
+                                      }}/>
+                        <ValidateForm type="text" title="姓名" hint="请输入姓名" value={this.old.name}
+                                      vadlidate={(obj, value) => {
+                                          this.form.name = '';
+                                          if (value.length === 0) {
+                                              return [false, "请输入姓名"]
+                                          } else if (value.length > 10) {
+                                              return [false, "姓名长度不能超过10"]
+                                          }
+                                          this.form.name = value;
+                                          return [true, ""];
+                                      }}/>
+                        <ValidateForm type="text" title="身份证号码" hint="请输入身份证" value={this.old.identity}
+                                      vadlidate={(obj, value) => {
+                                          this.form.identity = '';
+                                          if (!IdentityCheck(value))
+                                              return [false, "身份证非法,请检查"];
+                                          this.form.identity = value;
+
+                                          return [true, ""];
+                                      }}/>
+                        <ValidateForm type="text" title="籍贯" hint="请输入籍贯"
+                                      value={this.old.nativeplace}
+                                      vadlidate={(obj, value) => {
+                                          this.form.nativeplace = '';
+                                          if (value.length > 20)
+                                              return [false, "籍贯长度不能超过20,请检查"];
+                                          this.form.nativeplace = value;
+
+                                          return [true, ""];
+                                      }}/>
+                        <ValidateForm type="text" title="爱好" hint="用户爱好，可空"
+                                      value={this.old.hobbyy}
+                                      vadlidate={(obj, value) => {
+                                          this.form.hobby = '';
+                                          if (value.length > 100)
+                                              return [false, "爱好长度不能超过100,请检查"];
+                                          this.form.hobby = value;
+
+                                          return [true, ""];
+                                      }}/>
+                        <Select defaultValue={this.old.type} style={{width: 240}} onChange={this.handleChange}>
+                            <Option value="1">学生</Option>
+                            <Option value="2">教师</Option>
+                            <Option value="3">管理员</Option>
+                        </Select>
+                    </form>
+                </Modal>
+            </span>
+        )
+    }
+}
+
+class Delete extends React.Component {
+    constructor(props) {
+        super(props)
+    }
+    componentDidUpdate(nextProps){
+
+    }
+    onConfirm() {
+        var obj = this;
+        var postbody = {
+            uid: obj.props.uid
+        }
+        $.ajax({
+            type: "POST",
+            url: weblocation + "/manager/user/delete",
+            cache: false,
+            crossDomain: true,
+            xhrFields: {
+                withCredentials: true
+            },
+            data: JSON.stringify(postbody),
+            success: function (data) {
+                var json = JSON.parse(data);
+                if (json['code'] == 600) {
+                    notification.open({
+                        message: '成功',
+                        description: json['message'],
+                        icon: <Icon type="check" style={{color: '#108ee9'}}/>,
+                    });
+                    Class.componentDidMount();
+                } else {
+                    notification.open({
+                        message: '失败',
+                        description: json['message'],
+                        icon: <Icon type="colse" style={{color: '#ff4040'}}/>,
+                    });
+                }
+            }
+        })
+    }
+
+    render() {
+        return (
+            <Popconfirm title="您是否要删除用户" okText="Yes" cancelText="No" onConfirm={() => this.onConfirm()}>
+                <a>删除</a>
+            </Popconfirm>
+        )
+    }
+}
+
+class ResetPassword extends React.Component {
+    constructor(props) {
+        super(props)
+        this.componentDidUpdate=this.componentDidUpdate.bind(this)
+    }
+    componentDidUpdate(){
+    }
+    onConfirm() {
+        var obj = this;
+        var postbody = {
+            uid: obj.props.uid
+        }
+        $.ajax({
+            type: "POST",
+            url: weblocation + "/manager/user/resetpassword",
+            cache: false,
+            crossDomain: true,
+            xhrFields: {
+                withCredentials: true
+            },
+            data: JSON.stringify(postbody),
+            success: function (data) {
+                var json = JSON.parse(data);
+                if (json['code'] == 400) {
+                    notification.open({
+                        message: '成功',
+                        description: json['message'],
+                        icon: <Icon type="check" style={{color: '#108ee9'}}/>,
+                    });
+                    //Class.componentDidMount();
+                } else {
+                    notification.open({
+                        message: '失败',
+                        description: json['message'],
+                        icon: <Icon type="colse" style={{color: '#ff4040'}}/>,
+                    });
+                }
+            }
+        })
+    }
+
+    render() {
+        return (
+            <Popconfirm title="您是否要将该用户密码重置为身份证号码" okText="Yes" cancelText="No" onConfirm={() => this.onConfirm()}>
+                <a>重置密码</a>
+            </Popconfirm>
+        )
+    }
+}
+
+class Add extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {}
+        this.form = {
+            username: '',
+            name: '',
+            identity: '',
+            nativeplace: '',
+            type: 1,
+        }
+    }
+
+    showModal = () => {
+        var obj = this;
+        obj.setState({
+            visible: true,
+        });
+    }
+    handleOk = () => {
+        if (this.form.username === '' || this.form.name === '' || this.form.identity === '' || this.form.nativeplace === '' || this.form.type === '') {
+            console.log(this.form)
+            return;
+        }
+        this.setState({
+            confirmLoading: true,
+        });
+        var obj = this;
+        // var postbody = {
+        //     username: this.form.username,
+        //     peoplename: this.form.peoplename,
+        //     identity: this.form.identity,
+        //     password: this.form.password,
+        //     telephone: this.form.telephone,
+        //     email: this.form.email,
+        //     roleid: this.form.roleid
+        // };
+        $.ajax({
+                type: "POST",
+                url: weblocation + "/manager/user/add",
+                cache: false,
+                crossDomain: true,
+                xhrFields: {
+                    withCredentials: true
+                },
+                data: JSON.stringify(obj.form),
+                success: function (data) {
+                    var json = JSON.parse(data);
+                    if (json['code'] == 500) {
+                        notification.open({
+                            message: '成功',
+                            description: json['message'],
+                            icon: <Icon type="check" style={{color: '#108ee9'}}/>,
+                        });
+                        Class.componentDidMount();
+                    }
+                    else {
+                        notification.open({
+                            message: '失败',
+                            description: json['message'],
+                            icon: <Icon type="close" style={{color: '#FF4040'}}/>,
+                        });
+                    }
+                    obj.setState({
+                        visible: false,
+                        confirmLoading: false,
+                    });
+                }
+            }
+        )
+    }
+    handleCancel = () => {
+        this.setState({
+            visible: false,
+        });
+    }
+
+    handleChange = (e) => {
+        this.form.type = e;
     }
 
     render() {
         return (
             <div>
                 <Button type="primary" href="#" onClick={this.showModal}>添加</Button>
-                <Modal title="Title"
+                <Modal title="添加用户"
                        visible={this.state.visible}
                        onOk={this.handleOk}
                        confirmLoading={this.state.confirmLoading}
@@ -454,14 +495,25 @@ class Add extends React.Component {
                        ]}
                 >
                     <form>
+                        <ValidateForm type="text" title="用户名" hint="长度6-20" vadlidate={(obj, value) => {
+                            this.form.username = ''
+                            if (value.length === 0) {
+                                return [false, "用户名未输入"]
+                            } else if (value.length > 16) {
+                                return [false, "姓名长度不能超过16"]
+                            }
+                            this.form.username = value
+
+                            return [true, ""]
+                        }}/>
                         <ValidateForm type="text" title="姓名" hint="张三" vadlidate={(obj, value) => {
-                            this.form.peoplename = '';
+                            this.form.name = '';
                             if (value.length === 0) {
                                 return [false, "请输入姓名"]
-                            } else if (value.length > 10) {
-                                return [false, "姓名长度不能超过10"]
+                            } else if (value.length > 16) {
+                                return [false, "姓名长度不能超过16"]
                             }
-                            this.form.peoplename = value;
+                            this.form.name = value;
                             return [true, ""];
                         }}/>
                         <ValidateForm type="text" title="身份证号码" hint="18位身份证号码" vadlidate={(obj, value) => {
@@ -471,116 +523,24 @@ class Add extends React.Component {
                             }
                             if (!IdentityCheck(value))
                                 return [false, "身份证非法,请检查"];
-                            var temp = this;
-                            $.post(weblocation + "/user/vadliidateidentity", {
-                                json: JSON.stringify({
-                                    identity: value,
-                                }),
-                            }, function (data) {
-                                var json = JSON.parse(data);
-
-                                if (json["condition"] !== 0) {
-                                    obj.seterror(false, json["message"]);
-                                } else {
-                                    temp.form.identity = value
-                                    obj.seterror(true, json["message"]);
-
-                                }
-                            });
+                            this.form.identity = value;
                             return [true, ""];
 
                         }}/>
-                        <ValidateForm type="text" title="用户名" hint="长度6-20" vadlidate={(obj, value) => {
-                            this.form.loginname = ''
-
-                            if (value.length === 0) {
-                                return [false, "用户名未输入"]
-                            } else if (value.length > 20) {
-                                return [false, "用户名长度不能超过20"]
-                            } else if (value.length < 6) {
-                                return [false, "用户名长度不能小于6"]
-                            }
-                            var b = /^[0-9a-zA-Z]*$/g;
-                            if (b.test(value) === false)
-                                return [false, "用户名只能为英文和数字组合"]
-                            var temp = this
-
-                            $.post(weblocation + "/user/vadlidateuser", {
-                                json: JSON.stringify({
-                                    loginname: value,
-                                }),
-                            }, function (data) {
-                                var json = JSON.parse(data);
-                                if (json["condition"] != 0) {
-                                    obj.seterror(false, json["message"]);
-                                } else {
-                                    temp.form.loginname = value
-                                    obj.seterror(true, json["message"]);
-                                }
-                            });
-
-                            return [true, ""]
-                        }}/>
-                        <ValidateForm type="text" title="手机号码" hint="11位手机号码" vadlidate={(obj, value) => {
-                            this.form.telephone = ''
-                            if (value.length === 0) {
-                                return [false, "手机号码未输入"]
-                            } else if (value.length !== 11) {
-                                return [false, "手机号码长度不正确"]
-                            }
-                            var b = /^1[3|4|5|7|8][0-9]{9}$/g
-
-                            if (b.test(value) === false)
-                                return [false, "手机号码输入不合法"]
-                            this.form.telephone = value
-                            return [true, ""]
-                        }}/>
-                        <ValidateForm type="text" title="电子邮箱" hint="example@example.com" vadlidate={(obj, value) => {
-                            this.form.email = ''
-
-                            if (value.length === 0) {
-                                return [false, "电子邮箱未输入"]
-                            } else if (value.length > 35) {
-                                return [false, "电子邮箱不能超过35"]
-                            }
-                            if (EmailCheck(value) === false)
-                                return [false, "电子邮箱输入不合法"]
-                            this.form.email = value
-                            return [true, ""]
-                        }}/>
-                        <ValidateForm type="password" title="密码" hint="长度应在8-16位之间，且包含数字与字母"
+                        <ValidateForm type="text" title="籍贯" hint="请输入籍贯"
                                       vadlidate={(obj, value) => {
-                                          this.form.password = ''
+                                          this.form.nativeplace = '';
+                                          if (value.length > 20)
+                                              return [false, "籍贯长度不能超过20,请检查"];
+                                          this.form.nativeplace = value;
 
-                                          if (value.length === 0) {
-                                              return [false, "密码未输入"]
-                                          } else if (value.length < 8) {
-                                              return [false, "密码长度不能小于8位"]
-                                          } else if (value.length > 20) {
-                                              return [false, "密码长度不能超过20位"]
-                                          }
-                                          var b = new RegExp(/[A-Za-z].*[0-9]|[0-9].*[A-Za-z]/);
-                                          if (b.test(value) === false)
-                                              return [false, "密码需要包含字母和数字"]
-                                          this.form.password = value
-
-                                          return [true, ""]
+                                          return [true, ""];
                                       }}/>
-                        <ValidateForm type="password" title="确认密码" hint="与上面输入的密码相同" vadlidate={(obj, value) => {
-                            this.form.repassword = ''
-                            if (value === '') {
-                                return [false, "没有输入确认密码"]
-                            }
-                            if (this.form.password !== value) {
-                                return [false, "两次密码输入不一致"]
-                            }
-                            this.form.repassword = this.form.password
-                            return [true, '']
-                        }}/>
-                        <Select defaultValue="请选择用户角色" style={{width: 240}} onChange={this.handleChange}>
-                            <Option value="5">学生</Option>
-                            <Option value="6">教师</Option>
-                            <Option value="1">管理员</Option>
+
+                        <Select defaultValue="1" style={{width: 240}} onChange={this.handleChange}>
+                            <Option value="1">学生</Option>
+                            <Option value="2">辅导员</Option>
+                            <Option value="3">管理员</Option>
                         </Select>
                     </form>
                 </Modal>
@@ -604,33 +564,34 @@ export default class AdminUser extends React.Component {
             pagination: pager,
         });
         this.fetch({
-            pos: pagination.current,
-            num: pagination.pageSize
+            currentpage: pagination.current,
+            sep: pagination.pageSize
         });
     }
     fetch = (params = {}) => {
         var obj = this;
         this.setState({loading: true});
         var postbody = {
-            num: params.num,
-            pos: params.pos,
+            currentpage: params.currentpage,
+            sep: params.sep,
             searchtype: obj.state.searchtype,
             keyword: obj.state.keyword
         };
         $.ajax({
             type: "POST",
-            url: weblocation + "/admin/user/view",
+            url: weblocation + "/manager/user/search",
             cache: false,
             crossDomain: true,
             xhrFields: {
                 withCredentials: true
             },
-            data: {json: JSON.stringify(postbody)},
+            data: JSON.stringify(postbody),
             success: function (data) {
                 const pagination = {...obj.state.pagination};
                 var json = JSON.parse(data);
-                json['data']=dataProcess(json['data']);
-                pagination.total = json["count"];
+                json['data'] = dataProcess(json['data']);
+                pagination.total = json["total"];
+                pagination.pageSize=json['sep'];
                 obj.setState({datasource: json["data"], loading: false, pagination});
             }
         })
@@ -639,18 +600,19 @@ export default class AdminUser extends React.Component {
     componentDidMount() {
         this.fetch(
             {
-                pos: 1,
-                num: 10,
+                currentpage: 1,
+                sep: 50,
             });
     }
 
     handleOnchange = (e) => {
-        this.state.searchtype=e;
+        this.state.searchtype = e;
     }
     handleSearch = (value) => {
-        this.state.keyword=value;
+        this.state.keyword = value;
         this.componentDidMount();
     }
+
     render() {
         return (
             <div className="view">
@@ -661,9 +623,12 @@ export default class AdminUser extends React.Component {
                             <h6 className="mb-4 text-uppercase">Data Table</h6>
                             <Add/><br/>
                             <InputGroup compact>
+
                                 <Select defaultValue="请选择查询方式" onChange={this.handleOnchange}>
-                                    <Option value="1">身份证号</Option>
-                                    <Option value="0">姓名</Option>
+                                    <Option value="identity">身份证号</Option>
+                                    <Option value="name">姓名</Option>
+                                    <Option value="name">姓名</Option>
+
                                 </Select>
                                 <Search
                                     placeholder="请输入查询关键字"

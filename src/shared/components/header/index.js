@@ -1,22 +1,16 @@
 import React from 'react';
-import screenfull from 'screenfull';
 import {
     UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem,
-    Button, Progress, Modal, ModalHeader, ModalBody, ModalFooter
+    Progress, ModalHeader, ModalBody, ModalFooter
 } from 'reactstrap';
+
 import $ from 'jquery';
 
 // icons
-import IconNotification from 'react-icons/lib/md/notifications-none';
-import IconFullScreen from 'react-icons/lib/md/crop-free';
-import IconSearch from 'react-icons/lib/md/search';
+import {Modal, Button} from 'antd';
+
 import IconFace from 'react-icons/lib/md/face';
-import IconMail from 'react-icons/lib/md/mail';
-import IconSecurity from 'react-icons/lib/md/security';
-import IconHelp from 'react-icons/lib/md/help';
 import IconLogout from 'react-icons/lib/md/power-settings-new';
-import IconDownload from 'react-icons/lib/md/cloud-download';
-import IconCake from 'react-icons/lib/md/cake';
 import IconMenu from 'react-icons/lib/md/menu';
 
 // style
@@ -26,16 +20,52 @@ import config from '../../../config'
 var weblocation = config["weblocation"]
 
 export default class SiteHead extends React.Component {
+    state = {
+        ModalText: '是否确认注销?',
+        visible: false,
+        confirmLoading: false,
+    }
+
     constructor(props) {
         super(props);
-        this.state = {
-            modal: false,
-            modalClass: '',
-            name: ''
-        };
         this.toggle = this.toggle.bind(this);
-        this.logout = this.logout.bind(this);
 
+    }
+
+    showModal = () => {
+        this.setState({
+            visible: true,
+        });
+    }
+    handleCancel = () => {
+        console.log('Clicked cancel button');
+        this.setState({
+            visible: false,
+        });
+    }
+    handleOk = () => {
+        var obj=this
+        this.setState({
+            ModalText: '注销成功后将会返回登录页面',
+            confirmLoading: true,
+        });
+        $.ajax({
+            type: "GET",
+            url: weblocation + "/common/logout",
+            cache: false,
+            crossDomain: true,
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function (data) {
+                obj.setState({
+                    visible: false,
+                    confirmLoading: false,
+                });
+                obj.props.router.push('/pages/signin');
+
+            }
+        });
     }
 
     componentDidMount() {
@@ -64,31 +94,11 @@ export default class SiteHead extends React.Component {
     }
 
     toggle = (e, str) => {
-        alert("wzq")
-        this.setState({
-            modal: !this.state.modal,
-            modalClass: str
-        })
+        //alert("wzq")
+        this.showModal();
     }
 
-    logout() {
-        var obj = this;
-        this.toggle();
-        $.ajax({
-            type: "GET",
-            url: weblocation + "/common/logout",
-            cache: false,
-            crossDomain: true,
-            xhrFields: {
-                withCredentials: true
-            },
-            success: function (data) {
-                obj.props.router.push('/pages/signin');
 
-            }
-        });
-
-    }
 
     render() {
         return (
@@ -96,15 +106,13 @@ export default class SiteHead extends React.Component {
                 <div className="wrap mr-4">
                     <IconMenu size="24" color="#fff" onClick={this.props.toggleNav} style={{cursor: 'pointer'}}/>
                 </div>
-                <Modal isOpen={this.state.modal} toggle={this.toggle} className="modalRapid">
-                    <ModalHeader toggle={this.toggle}>提示</ModalHeader>
-                    <ModalBody>
-                        是否确认注销?
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="primary" onClick={this.logout}>确认</Button>{' '}
-                        <Button color="secondary" onClick={this.toggle}>取消</Button>
-                    </ModalFooter>
+                <Modal title="Title"
+                       visible={this.state.visible}
+                       onOk={this.handleOk}
+                       confirmLoading={this.state.confirmLoading}
+                       onCancel={this.handleCancel}
+                >
+                    <p>{this.state.ModalText}</p>
                 </Modal>
                 {/*<form className="col-7 col-sm-8 col-md-7 p-0 site-search">*/}
                 {/*<IconSearch color="#515151" size="22"/>*/}

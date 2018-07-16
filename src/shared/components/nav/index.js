@@ -49,7 +49,10 @@ class NavList extends React.Component {
             },
             success: function (data) {
                 var json = JSON.parse(data)
-                obj.setState({role: json['data']['type']});
+                if (json['code']==800)
+                    obj.setState({role: json['data']['type']});
+                else
+                    obj.setState({role: 0});
 
             }
         });

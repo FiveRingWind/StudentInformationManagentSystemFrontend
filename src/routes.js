@@ -62,7 +62,10 @@ $.ajax({
     },
     success: function (data) {
         var json = JSON.parse(data)
-        currentRole = json['data']['type'];
+        if (json['code']==800)
+            currentRole = json['data']['type'];
+        else
+            currentRole=0;
     }
 });
 export default (
