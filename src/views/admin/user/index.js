@@ -3,16 +3,23 @@ import {
     Card, CardBlock
 } from 'reactstrap';
 import $ from "jquery";
-import {Table, Icon, Divider, Popconfirm, Button, Modal, Input, Select, Upload} from 'antd';
+import {
+    Table, Icon, Divider, Popconfirm, Button, Modal, Input, Select, Upload, Row, InputNumber, DatePicker,
+    Col, Form
+} from 'antd';
 import {type, weblocation} from "../../../config";
 import {Link, IndexLink} from 'react-router';
 import {notification} from "antd/lib/index";
 import {ValidateForm, IdentityCheck, EmailCheck} from '../../../Library/ValidateForm.js'
+import styles from './TableList.less';
 
 const InputGroup = Input.Group;
 const Option = Select.Option;
 const Search = Input.Search;
+const FormItem = Form.Item;
+
 var Class;
+
 
 function timeConverter(UNIX_timestamp) {
     var a = new Date(UNIX_timestamp * 1000);
@@ -135,7 +142,8 @@ class Change extends React.Component {
 
         }
     }
-    componentDidUpdate(nextProps){
+
+    componentDidUpdate(nextProps) {
         this.state = {
             uid: this.props.uid,
             visible: false,
@@ -302,9 +310,11 @@ class Delete extends React.Component {
     constructor(props) {
         super(props)
     }
-    componentDidUpdate(nextProps){
+
+    componentDidUpdate(nextProps) {
 
     }
+
     onConfirm() {
         var obj = this;
         var postbody = {
@@ -351,10 +361,12 @@ class Delete extends React.Component {
 class ResetPassword extends React.Component {
     constructor(props) {
         super(props)
-        this.componentDidUpdate=this.componentDidUpdate.bind(this)
+        this.componentDidUpdate = this.componentDidUpdate.bind(this)
     }
-    componentDidUpdate(){
+
+    componentDidUpdate() {
     }
+
     onConfirm() {
         var obj = this;
         var postbody = {
@@ -549,10 +561,45 @@ class Add extends React.Component {
     }
 }
 
-export default class AdminUser extends React.Component {
+const CreateForm = Form.create()(props => {
+    const {modalVisible, form, handleAdd, handleModalVisible} = props;
+    const okHandle = () => {
+        form.validateFields((err, fieldsValue) => {
+            if (err) return;
+            form.resetFields();
+            handleAdd(fieldsValue);
+        });
+    };
+    return (
+        <Modal
+            title="新建规则"
+            visible={modalVisible}
+            onOk={okHandle}
+            onCancel={() => handleModalVisible()}
+        >
+            <FormItem labelCol={{span: 5}} wrapperCol={{span: 15}} label="描述">
+                {form.getFieldDecorator('desc', {
+                    rules: [{required: true, message: 'Please input some description...'}],
+                })(<Input placeholder="请输入"/>)}
+            </FormItem>
+        </Modal>
+    );
+});
+
+// @Form.create()
+class AdminUser extends React.Component {
     constructor(props) {
         super(props)
-        this.state = {datasource: [], loading: true, pagination: {}, searchtype: '', keyword: ''}
+        //this.handleSearch=this.handleOnchange.bind(this)
+        this.state = {
+            datasource: [],
+            loading: true,
+            pagination: {},
+            searchtype: '',
+            keyword: '',
+            expandForm: false,
+            modalVisible: false
+        }
         Class = this;
 
     }
@@ -574,9 +621,19 @@ export default class AdminUser extends React.Component {
         var postbody = {
             currentpage: params.currentpage,
             sep: params.sep,
-            searchtype: obj.state.searchtype,
-            keyword: obj.state.keyword
+            condition: {}
         };
+
+        var condition_raw = this.props.form.getFieldsValue();
+        for (var key in condition_raw) {
+            if (condition_raw[key] === undefined||condition_raw[key]==="")
+                continue
+            postbody["condition"][key] = {
+                "data": condition_raw[key], "fuzzy": true
+            }
+        }
+
+
         $.ajax({
             type: "POST",
             url: weblocation + "/manager/user/search",
@@ -591,7 +648,7 @@ export default class AdminUser extends React.Component {
                 var json = JSON.parse(data);
                 json['data'] = dataProcess(json['data']);
                 pagination.total = json["total"];
-                pagination.pageSize=json['sep'];
+                pagination.pageSize = json['sep'];
                 obj.setState({datasource: json["data"], loading: false, pagination});
             }
         })
@@ -608,43 +665,168 @@ export default class AdminUser extends React.Component {
     handleOnchange = (e) => {
         this.state.searchtype = e;
     }
-    handleSearch = (value) => {
-        this.state.keyword = value;
+    toggleForm = () => {
+        const {expandForm} = this.state;
+        this.setState({
+            expandForm: !expandForm,
+        });
+    };
+    handleSearch = (e) => {
+
+        e.preventDefault();
+
+
+        // this.state.keyword = value;
         this.componentDidMount();
+    }
+    handleFormReset = () => {
+        const { form, dispatch } = this.props;
+        form.resetFields();
+        this.setState({
+            formValues: {},
+        });
+
+    };
+    renderSimpleForm() {
+        const {form} = this.props;
+        const {getFieldDecorator} = form;
+        return (
+            <Form onSubmit={this.handleSearch} layout="inline">
+                <Row gutter={{md: 8, lg: 24, xl: 48}}>
+                    <Col md={8} sm={24}>
+                        <FormItem label="姓名">
+                            {getFieldDecorator('name')(<Input placeholder="请输入"/>)}
+                        </FormItem>
+                    </Col>
+                    <Col md={8} sm={24}>
+                        <FormItem label="身份证">
+                            {getFieldDecorator('identity')(<Input placeholder="请输入"/>)}
+                        </FormItem>
+                    </Col>
+                    <Col md={8} sm={24}>
+            <span className={styles.submitButtons}>
+              <Button type="primary" htmlType="submit">
+                查询
+              </Button>
+              <Button style={{marginLeft: 8}} onClick={this.handleFormReset}>
+                重置
+              </Button>
+              <a style={{marginLeft: 8}} onClick={this.toggleForm}>
+                展开 <Icon type="down"/>
+              </a>
+            </span>
+                    </Col>
+                </Row>
+            </Form>
+        );
+    }
+
+    renderAdvancedForm() {
+        const {form} = this.props;
+        const {getFieldDecorator} = form;
+        return (
+            <Form onSubmit={this.handleSearch} layout="inline">
+                <Row gutter={{md: 8, lg: 24, xl: 48}}>
+                    <Col md={8} sm={24}>
+                        <FormItem label="姓名">
+                            {getFieldDecorator('name')(<Input placeholder="请输入"/>)}
+                        </FormItem>
+                    </Col>
+                    <Col md={8} sm={24}>
+                        <FormItem label="性别">
+                            {getFieldDecorator('sex',{
+                                initialValue: ""
+                            })(
+                                <Select value="">
+                                    <Option value="">任意</Option>
+                                    <Option value="0">女</Option>
+                                    <Option value="1">男</Option>
+                                </Select>
+                            )}
+                        </FormItem>
+                    </Col>
+                    <Col md={8} sm={24}>
+                        <FormItem label="身份证">
+                            {getFieldDecorator('identity')(<Input placeholder="请输入"/>)}
+                        </FormItem>
+                    </Col>
+                </Row>
+                <Row gutter={{md: 8, lg: 24, xl: 48}}>
+                    <Col md={8} sm={24}>
+                        <FormItem label="籍贯">
+                            {getFieldDecorator('nativeplace')(<Input placeholder="请输入"/>)}
+                        </FormItem>
+                    </Col>
+                    <Col md={8} sm={24}>
+                        <FormItem label="用户类型">
+                            {getFieldDecorator('type',{
+                                initialValue: ""
+                            })(
+                                <Select value="">
+                                    <Option value="">任意</Option>
+                                    <Option value="1">学生</Option>
+                                    <Option value="2">辅导员</Option>
+                                    <Option value="3">管理员</Option>
+
+                                </Select>
+                            )}
+                        </FormItem>
+                    </Col>
+                </Row>
+                <div style={{overflow: 'hidden'}}>
+          <span style={{float: 'right', marginBottom: 24}}>
+            <Button type="primary" htmlType="submit">
+              查询
+            </Button>
+            <Button style={{marginLeft: 8}} onClick={this.handleFormReset}>
+              重置
+            </Button>
+            <a style={{marginLeft: 8}} onClick={this.toggleForm}>
+              收起 <Icon type="up"/>
+            </a>
+          </span>
+                </div>
+            </Form>
+        );
+    }
+
+    renderForm() {
+        const {expandForm} = this.state;
+        return expandForm ? this.renderAdvancedForm() : this.renderSimpleForm();
     }
 
     render() {
+        const {selectedRows, modalVisible} = this.state;
+
+        const parentMethods = {
+            handleAdd: this.handleAdd,
+            handleModalVisible: this.handleModalVisible,
+        };
         return (
             <div className="view">
                 <ViewHeader/>
                 <ViewContent>
+                    <CreateForm {...parentMethods} modalVisible={modalVisible}/>
+
                     <Card className="mb-4">
                         <CardBlock className="table-responsive">
                             <h6 className="mb-4 text-uppercase">Data Table</h6>
                             <Add/><br/>
-                            <InputGroup compact>
+                            <div className={styles.tableListForm}>{this.renderForm()}</div>
 
-                                <Select defaultValue="请选择查询方式" onChange={this.handleOnchange}>
-                                    <Option value="identity">身份证号</Option>
-                                    <Option value="name">姓名</Option>
-                                    <Option value="name">姓名</Option>
-
-                                </Select>
-                                <Search
-                                    placeholder="请输入查询关键字"
-                                    onSearch={this.handleSearch}
-                                    enterButton
-                                    style={{width: '300px'}}
-                                />
-                            </InputGroup>
                             <Table columns={columns} dataSource={this.state.datasource}
                                    pagination={this.state.pagination}
                                    loading={this.state.loading}
                                    onChange={this.handleTableChange}/>
                         </CardBlock>
                     </Card>
+
                 </ViewContent>
             </div>
         )
     }
 }
+
+AdminUser = Form.create({})(AdminUser);
+
+export default AdminUser;

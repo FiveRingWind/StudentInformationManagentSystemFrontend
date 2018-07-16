@@ -180,20 +180,21 @@ class NavList extends React.Component {
                             <span className="name">学院信息管理</span>
                         </IndexLink>
                     </li>
-                    <li onClick={this.handleClick.bind(this, 0)}
-                        className={(this.state.selected === 0) ? 'selected' : ''}
-                        style={currentRole === 1 ? {display: 'block'} : {display: 'none'}}>
-                        <IndexLink to="/admin/class" activeClassName="active">
-                            <IconWidgets size="18" color="#7C4DFF"/>
-                            <span className="name">班级信息管理</span>
-                        </IndexLink>
-                    </li>
+
                     <li onClick={this.handleClick.bind(this, 0)}
                         className={(this.state.selected === 0) ? 'selected' : ''}
                         style={currentRole === 3 ? {display: 'block'} : {display: 'none'}}>
                         <IndexLink to="/admin/user" activeClassName="active">
                             <IconWidgets size="18" color="#7C4DFF"/>
                             <span className="name">用户信息管理</span>
+                        </IndexLink>
+                    </li>
+                    <li onClick={this.handleClick.bind(this, 0)}
+                        className={(this.state.selected === 0) ? 'selected' : ''}
+                        style={currentRole === 3 ? {display: 'block'} : {display: 'none'}}>
+                        <IndexLink to="/admin/class" activeClassName="active">
+                            <IconWidgets size="18" color="#7C4DFF"/>
+                            <span className="name">班级信息管理</span>
                         </IndexLink>
                     </li>
                 </ul>
