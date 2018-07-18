@@ -1,7 +1,10 @@
 import React from "react";
-import {
-    Input, Label, FormGroup, FormFeedback,
-} from 'reactstrap';
+// import {
+//     Input, Label, FormGroup, FormFeedback,
+// } from 'reactstrap';
+import {Form, Input, DatePicker, Col, TimePicker, Select, Cascader} from 'antd';
+
+const FormItem = Form.Item;
 
 export function IdentityCheck(idcode) {
     if (idcode.length !== 18) return false;
@@ -23,16 +26,18 @@ export function IdentityCheck(idcode) {
     var format = idcard_patter.test(idcode);
     return (last === last_no && format) ? true : false;
 }
+
 export function EmailCheck(value) {
     var b = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/
     if (b.test(value) === false)
         return false
     return true
 }
+
 export class ValidateForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {value: (props.value)?props.value:'', inputed: false, correct: false};
+        this.state = {value: (props.value) ? props.value : '', inputed: false, correct: false};
         this.handleBlur = this.handleBlur.bind(this);
         this.handleFocus = this.handleFocus.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -48,15 +53,25 @@ export class ValidateForm extends React.Component {
         this.error = error
         this.setState({correct: status});
     }
+    componentDidUpdate(nextProps) {
+        this.state = {value: (this.props.value) ? this.props.value : '', inputed: false, correct: false};
+
+
+    }
 
     handleBlur(event) {
-        var res = this.props.vadlidate(this, this.state.value)
+        if (typeof this.props.form !== "undefined") {
+            var value=this.props.form.getFieldsValue()
+            var res = this.props.vadlidate(this, value[this.props.fieldtname])
+        }else{
+            var res = this.props.vadlidate(this, event.target.value)
+        }
         this.error = res[1]
         if (res[0] === true) {
-            this.setState({inputed: true, correct: true});
+            this.setState({inputed: true, correct: true,value:event.target.value});
             return
         }
-        this.setState({inputed: true, correct: false});
+        this.setState({inputed: true, correct: false,value:event.target.value});
     }
 
     handleFocus(event) {
@@ -69,38 +84,60 @@ export class ValidateForm extends React.Component {
     }
 
     render() {
+        // const {getFieldDecorator} = this.props.form!==undefined?this.props.form:undefined;
+        // alert(typeof this.props.form !=="undefined")
+        //console.log(typeof this.props.form.getFieldDecorator)
         if (this.state.inputed === false) {
             return (
-                <FormGroup className="mb-4">
-                    <Label>{this.props.title}</Label>
-                    <Input type={this.props.type} placeholder={this.props.hint} value={this.state.value}
-                           onBlur={this.handleBlur}
-                           onFocus={this.handleFocus} onChange={this.handleChange}
-                    />
-                </FormGroup>
+                <FormItem
+                    label={this.props.title}
+                    hasFeedback>
+                    {(typeof this.props.form !== "undefined") ? (this.props.form.getFieldDecorator(this.props.fieldtname)(
+                        <Input placeholder={this.props.hint}
+                               onBlur={this.handleBlur} onFocus={this.handleFocus} onChange={this.handleChange}/>
+                    )) : (<Input placeholder={this.props.hint} id="validating" value={this.state.value}
+                                 onBlur={this.handleBlur} onFocus={this.handleFocus} onChange={this.handleChange}/>)}
+                </FormItem>
+            )
+
+        }
+        if (this.state.correct === true && this.state.inputed === true) {
+            return (
+                <FormItem
+                    label={this.props.title}
+                    hasFeedback
+                    validateStatus="success"
+                >
+                    {typeof this.props.form !== "undefined" ? this.props.form.getFieldDecorator(this.props.fieldtname)(
+                        <Input placeholder={this.props.hint}
+                               onBlur={this.handleBlur} onFocus={this.handleFocus} onChange={this.handleChange}/>
+                    ) : <Input placeholder={this.props.hint} value={this.state.value}
+                               onBlur={this.handleBlur} onFocus={this.handleFocus} onChange={this.handleChange}/>}
+                </FormItem>
+
             )
         }
-        if (this.state.correct === true && this.state.inputed === true)
+        if (this.state.correct === false && this.state.inputed === true) {
+
             return (
-                <FormGroup className="mb-4" color="success">
-                    <Label>{this.props.title}</Label>
-                    <Input type={this.props.type} placeholder={this.props.hint} state="success" value={this.state.value}
-                           onBlur={this.handleBlur} onFocus={this.handleFocus} onChange={this.handleChange}
-                    />
-                </FormGroup>
+                <FormItem
+                    label={this.props.title}
+                    hasFeedback
+                    validateStatus="error"
+                    help={this.error}
+                >
+                    {typeof this.props.form !== "undefined" ? this.props.form.getFieldDecorator(this.props.fieldtname)(
+                        <Input placeholder={this.props.hint}
+                               onBlur={this.handleBlur} onFocus={this.handleFocus} onChange={this.handleChange}/>
+                    ) : <Input placeholder={this.props.hint} id="validating" value={this.state.value}
+                               onBlur={this.handleBlur} onFocus={this.handleFocus} onChange={this.handleChange}/>}
+                </FormItem>
             )
-        if (this.state.correct === false && this.state.inputed === true)
-            return (
-                <FormGroup className="mb-4" color="danger">
-                    <Label>{this.props.title}</Label>
-                    <Input type={this.props.type} placeholder={this.props.hint} state="danger" value={this.state.value}
-                           onBlur={this.handleBlur} onFocus={this.handleFocus} onChange={this.handleChange}
-                    />
-                    <FormFeedback>{this.error}</FormFeedback>
-                </FormGroup>
-            )
+        }
 
     }
 
 }
-export default ()=>{}
+
+export default () => {
+}

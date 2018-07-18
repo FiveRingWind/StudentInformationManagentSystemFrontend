@@ -41,7 +41,9 @@ import Reservation from "./views/student/reservation/index.js";
 import TeacherCheck from "./views/teacher/changescore";
 import TeacherAudit from './views/teacher/audit/index.js'
 import AdminCheck from "./views/admin/check";
-import AdminStuent from './views/admin/student/index'
+import AdminStuent from './views/admin/student/index';
+import AdminInstructor from './views/admin/instructor/index'
+
 //import Task from  './views/admin/upload';
 import AdminUser from './views/admin/user'
 import AdminStuInfo from './views/admin/school'
@@ -96,6 +98,7 @@ export default (
             <Route path='admin/student' component={AdminStuent}/>
             <Route path='admin/user' component={AdminUser}/>
             <Route path='admin/stuinfo' component={AdminStuInfo}/>
+            <Route path='admin/instructor' component={AdminInstructor}/>
             <Route path='student/certitication' component={Certification}/>
             <Route path='student/score' component={StuScore}/>
             <Route path='student/finalscore' component={StuFinalScore}/>

@@ -20,21 +20,6 @@ const FormItem = Form.Item;
 
 var Class;
 
-
-function timeConverter(UNIX_timestamp) {
-    var a = new Date(UNIX_timestamp * 1000);
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var year = a.getFullYear();
-    var month = a.getMonth() + 1;
-    var date = a.getDate();
-    var hour = a.getHours();
-    var min = a.getMinutes();
-    var sec = a.getSeconds();
-    var time = year + "/" + month + "/" + date + " " + hour + ":" + (min < 10 ? "0" + min : min);
-    // var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
-    return time;
-}
-
 function dataProcess(json) {
     if (json === undefined)
         return json;
@@ -50,45 +35,21 @@ function dataProcess(json) {
 
 const columns = [
     {
-        title: '学籍编号',
+        title: '辅导员编号',
         dataIndex: 'id',
         key: 'id'
     }, {
-        title: '学号',
-        dataIndex: 'studentid',
-        key: 'studentid'
+        title: '用户名',
+        dataIndex: 'username',
+        key: 'username'
     }, {
         title: '姓名',
         dataIndex: 'peoplename',
         key: 'peoplename'
     }, {
-        title: '班级',
+        title: '管理班级',
         dataIndex: 'classname',
         key: 'classname'
-    }, {
-        title: '入学年份',
-        dataIndex: 'enrollyear',
-        key: 'enrollyear'
-    }, {
-        title: '性别',
-        dataIndex: 'sex',
-        key: 'sex'
-    }, {
-        title: '生日',
-        dataIndex: 'birthday',
-        key: 'birthday'
-    }, {
-        title: '身份证号',
-        dataIndex: 'identity',
-        key: 'identity'
-    }, {
-        title: '籍贯',
-        dataIndex: 'nativeplace',
-        key: 'nativeplace'
-    }, {
-        title: '爱好',
-        dataIndex: 'hobby',
-        key: 'hobby'
     },
     {
         title: '操作',
@@ -111,8 +72,8 @@ const ViewContent = ({children}) => (
 const ViewHeader = () => (
     <div className="view-header">
         <header className="title text-white">
-            <h1 className="h4 text-uppercase">学籍管理</h1>
-            <p className="mb-0">在此页面进行对学生学籍信息的增删改查</p>
+            <h1 className="h4 text-uppercase">辅导员管理</h1>
+            <p className="mb-0">在此页面进行对辅导员信息的增删改查</p>
         </header>
     </div>
 );
@@ -146,7 +107,8 @@ class Change extends React.Component {
 
         this.form = {
             id: this.props.id,
-            classid: this.props.classid,
+            uid: this.props.record.uid,
+            classid: this.props.record.classid,
 
         };
     }
@@ -160,26 +122,27 @@ class Change extends React.Component {
     handleOk = () => {
         var raw_form = this.props.form.getFieldsValue();
 
-        if(this.form.studentid===''||this.form.enrollyear==='' || raw_form===undefined){
+        if(this.form.uid===''||this.form.classid==='' ){
             return
         }
         this.setState({
             confirmLoading: true,
         });
         var obj = this;
-        if(raw_form.classid!=undefined){
+        if(raw_form.classid!==undefined){
             this.form.classid=parseInt(raw_form.classid.key)
         }
-
+        if(raw_form.uid!==undefined){
+            this.form.uid=parseInt(raw_form.uid.key)
+        }
         var postbody = {
             id: this.form.id,
-            studentid:this.form.studentid,
-            enrollyear:this.form.enrollyear,
+            uid:this.form.uid,
             classid:this.form.classid,
         }
         $.ajax({
                 type: "POST",
-                url: weblocation + "/manager/student/edit",
+                url: weblocation + "/manager/instructor/edit",
                 cache: false,
                 crossDomain: true,
                 xhrFields: {
@@ -188,7 +151,7 @@ class Change extends React.Component {
                 data: JSON.stringify(postbody),
                 success: function (data) {
                     var json = JSON.parse(data);
-                    if (json['code'] === 2400) {
+                    if (json['code'] === 2000) {
                         notification.open({
                             message: '成功',
                             description: json['message'],
@@ -226,7 +189,7 @@ class Change extends React.Component {
         return (
             <span>
                 <a color="primary" href="#" onClick={this.showModal}>修改</a>
-                <Modal title="修改学籍信息"
+                <Modal title="修改辅导员信息"
                        visible={this.state.visible}
                        onOk={this.handleOk}
                        confirmLoading={this.state.confirmLoading}
@@ -238,28 +201,8 @@ class Change extends React.Component {
                        ]}
                 >
                     <form>
-                        <ValidateForm type="text" title="学号" hint="长度6-20"
-                             vadlidate={(obj, value) => {
-                                  this.form.studentid = '';
-                                 if (value.length === 0) {
-                                     return [false, "学号未输入"]
-                                 } else if (value.length > 16) {
-                                     return [false, "学号长度不能超过16"]
-                                 }
-                                  this.form.studentid = value;
-
-                                 return [true, ""];
-                             }} value={this.props.record.studentid}/>
-                        <ValidateForm type="text" title="入学年份" hint="输入四位入学年份，如2018"
-                                      vadlidate={(obj, value) => {
-                                          this.form.enrollyear = '';
-                                          if (value.length !== 4) {
-                                              return [false, "入学年份信息不合法"];
-                                          }
-                                          this.form.enrollyear = value;
-                                          return [true, ""];
-
-                                      }} value={this.props.record.enrollyear+"" }/>
+                        <RemoteSelect placeholder="请输入用户名" url="manager/user/search" fieldtname="uid" condition={{type:{data:2,fuzzy:false}}} form={form} searchkey="username" id="uid" name="username"
+                                               />
                         <RemoteSelect placeholder="输入班级名称" url="manager/class/search" fieldtname="classid" form={form}
                         />
                     </form>
@@ -288,7 +231,7 @@ class Delete extends React.Component {
         }
         $.ajax({
             type: "POST",
-            url: weblocation + "/manager/student/delete",
+            url: weblocation + "/manager/instructor/delete",
             cache: false,
             crossDomain: true,
             xhrFields: {
@@ -297,7 +240,7 @@ class Delete extends React.Component {
             data: JSON.stringify(postbody),
             success: function (data) {
                 var json = JSON.parse(data);
-                if (json['code'] === 2300) {
+                if (json['code'] === 1900) {
                     notification.open({
                         message: '成功',
                         description: json['message'],
@@ -317,7 +260,7 @@ class Delete extends React.Component {
 
     render() {
         return (
-            <Popconfirm title="您是否要删除学生学籍" okText="Yes" cancelText="No" onConfirm={() => this.onConfirm()}>
+            <Popconfirm title="您是否要删除该辅导员管理信息" okText="Yes" cancelText="No" onConfirm={() => this.onConfirm()}>
                 <a>删除</a>
             </Popconfirm>
         )
@@ -339,7 +282,7 @@ class Add extends React.Component {
     }
     handleOk = () => {
         var raw_form = this.props.form.getFieldsValue();
-        if (raw_form.classid === undefined || raw_form.studentid === '' || raw_form.enrollyear.length !== 4) {
+        if (raw_form.classid === undefined || raw_form.uid === undefined) {
             console.log(this.form)
             return;
         }
@@ -350,13 +293,12 @@ class Add extends React.Component {
 
         var obj = this;
         var postbody = {
+            uid: parseInt(raw_form.uid.key),
             classid: parseInt(raw_form.classid.key),
-            studentid: raw_form.studentid,
-            enrollyear: raw_form.enrollyear,
         };
         $.ajax({
                 type: "POST",
-                url: weblocation + "/manager/student/add",
+                url: weblocation + "/manager/instructor/add",
                 cache: false,
                 crossDomain: true,
                 xhrFields: {
@@ -365,7 +307,7 @@ class Add extends React.Component {
                 data: JSON.stringify(postbody),
                 success: function (data) {
                     var json = JSON.parse(data);
-                    if (json['code'] === 2200) {
+                    if (json['code'] === 1800) {
                         notification.open({
                             message: '成功',
                             description: json['message'],
@@ -404,7 +346,7 @@ class Add extends React.Component {
         return (
             <div>
                 <Button type="primary" href="#" onClick={this.showModal}>添加</Button>
-                <Modal title="添加学生学籍"
+                <Modal title="添加辅导员"
                        visible={this.state.visible}
                        onOk={this.handleOk}
                        confirmLoading={this.state.confirmLoading}
@@ -417,29 +359,8 @@ class Add extends React.Component {
                 >
                     <form>
 
-                        <ValidateForm type="text" title="学号" hint="长度6-20" fieldtname="studentid" form={form}
-                                      vadlidate={(obj, value) => {
-                                          this.form.studentid = ''
-                                          if (value.length === 0) {
-                                              return [false, "学号未输入"]
-                                          } else if (value.length > 16) {
-                                              return [false, "学号长度不能超过16"]
-                                          }
-                                          this.form.studentid = value
-
-                                          return [true, ""]
-                                      }}/>
-
-                        <ValidateForm type="text" title="入学年份" hint="输入四位入学年份，如2018" fieldtname="enrollyear" form={form}
-                                      vadlidate={(obj, value) => {
-                                          this.form.enrollyear = '';
-                                          if (value.length !== 4) {
-                                              return [false, "入学年份信息不合法"];
-                                          }
-                                          this.form.enrollyear = value;
-                                          return [true, ""];
-
-                                      }}/>
+                        <RemoteSelect placeholder="请输入用户名" url="manager/user/search" fieldtname="uid" condition={{type:{data:2,fuzzy:false}}} form={form} searchkey="username" id="uid" name="username"
+                        />
                         <RemoteSelect placeholder="输入班级名称" url="manager/class/search" fieldtname="classid" form={form}
                         />
 
@@ -528,7 +449,7 @@ class AdminStuent extends React.Component {
 
         $.ajax({
             type: "POST",
-            url: weblocation + "/manager/student/search",
+            url: weblocation + "/manager/instructor/search",
             cache: false,
             crossDomain: true,
             xhrFields: {
@@ -597,7 +518,7 @@ class AdminStuent extends React.Component {
                         </FormItem>
                     </Col>
                     <Col md={8} sm={24}>
-                        <FormItem label="入学年份">
+                        <FormItem label="用户名">
                             {getFieldDecorator('enrollyear')(<Input placeholder="请输入"/>)}
                         </FormItem>
                     </Col>
@@ -624,82 +545,9 @@ class AdminStuent extends React.Component {
         );
     }
 
-    renderAdvancedForm() {
-        const {form} = this.props;
-        const {getFieldDecorator} = form;
-        return (
-            <Form onSubmit={this.handleSearch} layout="inline">
-                <Row gutter={{md: 8, lg: 24, xl: 48}}>
-                    <Col md={8} sm={24}>
-                        <FormItem label="姓名">
-                            {getFieldDecorator('peoplename')(<Input placeholder="请输入"/>)}
-                        </FormItem>
-                    </Col>
-                    <Col md={8} sm={24}>
-                        <FormItem label="班级名称">
-                            {getFieldDecorator('classname')(<Input placeholder="请输入"/>)}
-                        </FormItem>
-                    </Col>
-                    <Col md={8} sm={24}>
-                        <FormItem label="入学年份">
-                            {getFieldDecorator('enrollyear')(<Input placeholder="请输入"/>)}
-                        </FormItem>
-                    </Col>
-
-
-                </Row>
-                <Row gutter={{md: 8, lg: 24, xl: 48}}>
-                    <Col md={8} sm={24}>
-                        <FormItem label="籍贯">
-                            {getFieldDecorator('nativeplace')(<Input placeholder="请输入"/>)}
-                        </FormItem>
-                    </Col>
-                    <Col md={8} sm={24}>
-                        <FormItem label="身份证">
-                            {getFieldDecorator('identity')(<Input placeholder="请输入"/>)}
-                        </FormItem>
-                    </Col>
-                    <Col md={8} sm={24}>
-                        <FormItem label="性别">
-                            {getFieldDecorator('sex', {
-                                initialValue: ""
-                            })(
-                                <Select value="">
-                                    <Option value="">任意</Option>
-                                    <Option value="0">女</Option>
-                                    <Option value="1">男</Option>
-                                </Select>
-                            )}
-                        </FormItem>
-                    </Col>
-                </Row>
-                <Row gutter={{md: 8, lg: 24, xl: 48}}>
-                    <Col md={8} sm={24}>
-                        <FormItem label="学号">
-                            {getFieldDecorator('studentid')(<Input placeholder="请输入"/>)}
-                        </FormItem>
-                    </Col>
-                </Row>
-                <div style={{overflow: 'hidden'}}>
-          <span style={{float: 'right', marginBottom: 24}}>
-            <Button type="primary" htmlType="submit">
-              查询
-            </Button>
-            <Button style={{marginLeft: 8}} onClick={this.handleFormReset}>
-              重置
-            </Button>
-            <a style={{marginLeft: 8}} onClick={this.toggleForm}>
-              收起 <Icon type="up"/>
-            </a>
-          </span>
-                </div>
-            </Form>
-        );
-    }
-
     renderForm() {
         const {expandForm} = this.state;
-        return expandForm ? this.renderAdvancedForm() : this.renderSimpleForm();
+        return this.renderSimpleForm();
     }
 
     render() {

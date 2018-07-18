@@ -1,6 +1,6 @@
 import {Select, Spin} from 'antd';
 import debounce from 'lodash/debounce';
-import config from '../config'
+import config, {type} from '../config'
 import React from 'react';
 import $ from "jquery";
 
@@ -29,30 +29,18 @@ export class RemoteSelect extends React.Component {
         const fetchId = this.lastFetchId;
         var obj = this;
         this.setState({data: [], fetching: true});
-
-
-        // fetch(weblocation+"/"+this.props.url)
-        //     .then(response => response.json())
-        //     .then((body) => {
-        //         if (fetchId !== this.lastFetchId) { // for fetch callback order
-        //             return;
-        //         }
-        //         const data = body.data.map(user => ({
-        //             text: `${user.name.first} ${user.name.last}`,
-        //             value: user.login.username,
-        //         }));
-        //         this.setState({ data, fetching: false });
-        //     });
-
+        var key=((typeof this.props.searchkey ==="undefined")?"name":this.props.searchkey)
         var postbody = {
             currentpage: 1,
             sep: 15,
             condition: {
-                name: {data: value, fuzzy: true}
 
             }
         };
-
+        postbody["condition"][key]= {data: value, fuzzy: true}
+        if(typeof obj.props.condition !=="undefined"){
+            postbody["condition"]=$.extend(postbody["condition"], obj.props.condition);
+        }
         $.ajax({
             type: "POST",
             url: weblocation + "/" + this.props.url,
@@ -68,10 +56,10 @@ export class RemoteSelect extends React.Component {
                 }
                 var json = JSON.parse(data);
                 var data = json.data.map(each => ({
-                    text: each.name,
-                    value: each.id,
+                    text: each[typeof obj.props.name ==="undefined"?"name": obj.props.name],
+                    value: each[typeof obj.props.id ==="undefined"?"id": obj.props.id],
                 }));
-                obj.setState({ data, fetching: false });
+                obj.setState({data, fetching: false});
 
             }
         })
@@ -87,21 +75,40 @@ export class RemoteSelect extends React.Component {
 
     render() {
         const {fetching, data, value} = this.state;
-        return (
-            <Select
-                showSearch
-                labelInValue
-                value={value}
-                placeholder={this.placeholder}
-                notFoundContent={fetching ? <Spin size="small"/> : null}
-                filterOption={false}
-                onSearch={this.fetchUser}
-                onChange={this.handleChange}
-                style={{width: '100%'}}
-            >
-                {data.map(d => <Option key={d.value}>{d.text}</Option>)}
-            </Select>
-        );
+
+
+        if (typeof this.props.form !== "undefined")
+            return (
+                this.props.form.getFieldDecorator(this.props.fieldtname)( <Select
+                    showSearch
+                    labelInValue
+                    value={value}
+                    placeholder={this.placeholder}
+                    notFoundContent={fetching ? <Spin size="small"/> : null}
+                    filterOption={false}
+                    onSearch={this.fetchUser}
+                    onChange={this.handleChange}
+                    style={{width: '100%'}}
+                >
+                    {data.map(d => <Option key={d.value}>{d.text}</Option>)}
+                </Select>)
+            );
+        else
+            return (
+                <Select
+                    showSearch
+                    labelInValue
+                    value={value}
+                    placeholder={this.placeholder}
+                    notFoundContent={fetching ? <Spin size="small"/> : null}
+                    filterOption={false}
+                    onSearch={this.fetchUser}
+                    onChange={this.handleChange}
+                    style={{width: '100%'}}
+                >
+                    {data.map(d => <Option key={d.value}>{d.text}</Option>)}
+                </Select>
+            );
     }
 }
 
